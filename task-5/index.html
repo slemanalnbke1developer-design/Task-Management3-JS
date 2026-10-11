@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tasks-2</title>
+    <link rel="stylesheet" href="./bootstrap.min.css" />
+    <link rel="stylesheet" href="./bootstrap-icons.min.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body class="bg-light" dir="rtl">
+    <div
+      class="container bg-secondary bg-opacity-25 border border-info rounded-4 mt-2 text-center"
+    >
+      <div class="row justify-content-center">
+        <div class="col-12 mt-3">
+          <h2>ادارة مهام</h2>
+        </div>
+        <div class="row my-3">
+          <div class="col-1">
+            <button class="btn btn-danger" id="btnInput">أضف</button>
+          </div>
+          <div class="col-3">
+            <select class="form-select text-center" id="filter">
+              <option value="1">عالية</option>
+              <option value="2">متوسطة</option>
+              <option value="3">منخفضة</option>
+            </select>
+          </div>
+          <div class="col-5">
+            <input
+              type="text"
+              placeholder="وصف المهمة"
+              class="form-control"
+              id="titleInput"
+            />
+          </div>
+          <div class="col-3">
+            <input type="date" class="form-control" id="dateInput" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <table class="table table-bordered border-warning">
+              <thead class="table-warning border-warning">
+                <tr>
+                  <th class="col-1">الرقم</th>
+                  <th class="col-6">المهمة</th>
+                  <th class="col-2">تاريخها</th>
+                  <th class="col-1">الاولوية</th>
+                  <th class="col-1">التنفيذ</th>
+                  <th class="col-1">حذف</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr>
+                  <td colspan="6" class="text-muted fw-bold py-3">
+                    لا يوجد مهام لعرضها
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      let Tasks = [];
+      const inputBtn = document.getElementById("btnInput");
+      const inputTitle = document.getElementById("titleInput");
+      const inputDate = document.getElementById("dateInput");
+      const tBody = document.getElementById("tbody");
+      const Filter = document.getElementById("filter");
+      let count = 1;
+
+      inputBtn.addEventListener("click", () => {
+        const taskTitle = inputTitle.value;
+        const taskDate = inputDate.value;
+        const today = new Date().toISOString().split("T")[0];
+
+        if (taskTitle === "" && taskDate === "") {
+          alert("يرجى ادخال وصف للمهمة وتاريخ صحيح");
+          return;
+        } else if (taskDate === "") {
+          alert("يرجى ادخال تاريخ صحيح");
+          return;
+        } else if (taskTitle === "") {
+          alert("يرجى ادخال وصف للمهمة");
+          return;
+        } else if (taskDate < today) {
+          alert("لا يمكن إضافة مهمة بتاريخ قديم");
+          return;
+        }
+
+        const task = {
+          id: Date.now(),
+          numTask: count++,
+          taskTitle: taskTitle,
+          taskDate: taskDate,
+          priority: Filter.value,
+          completed: false,
+        };
+
+        Tasks.push(task);
+        sortByPriority();
+        inputTitle.value = "";
+        inputDate.value = "";
+        render();
+      });
+      function sortByPriority() {
+        Tasks.sort((a, b) => a.priority - b.priority);
+      }
+
+      function render() {
+        tBody.innerHTML = "";
+
+        if (Tasks.length === 0) {
+          tBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-muted fw-bold py-3">لا يوجد مهام لعرضها</td>
+        </tr>`;
+          return;
+        }
+
+        Tasks.forEach((item) => {
+          const tr = document.createElement("tr");
+
+          const btnClass = item.completed
+            ? "btn-success"
+            : "btn-outline-success";
+          const iconClass = item.completed ? "bi-check-all" : "bi-check-lg";
+          const textDecoration = item.completed
+            ? "text-decoration-line-through text-muted"
+            : "";
+          const priorityText =
+            item.priority == 1
+              ? "عالية"
+              : item.priority == 2
+                ? "متوسطة"
+                : "منخفضة";
+
+          tr.innerHTML = `
+        <td>${item.numTask}</td>
+        <td class="${textDecoration}">${item.taskTitle}</td>
+        <td>${item.taskDate}</td>
+        <td>${priorityText}</td>
+        <td>
+          <button class="btn btn-sm ${btnClass}" onclick="toggleTasks(${item.id})">
+            <i class="bi ${iconClass}"></i>
+          </button>
+        </td>
+        <td>
+          <button class="btn btn-sm px-3" onclick="deleteTasks(${item.id})">
+            <i class="bi bi-trash text-danger fs-5"></i>
+          </button>
+        </td>
+      `;
+
+          tBody.appendChild(tr);
+        });
+      }
+
+      function toggleTasks(id) {
+        Tasks = Tasks.map((item) => {
+          if (item.id === id) {
+            return { ...item, completed: !item.completed };
+          }
+          return item;
+        });
+        render();
+      }
+
+      function deleteTasks(id) {
+        Tasks = Tasks.filter((item) => item.id !== id);
+        render();
+      }
+    </script>
+
+    <script src="./bootstrap.bundle.min.js"></script>
+  </body>
+</html>
